@@ -1,0 +1,32 @@
+.departments-page {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.departments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.department-card {
+    text-align: center;
+}
+
+.dept-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--border-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--spacing-lg);
+}
+
+.department-card h3 {
+    margin-bottom: var(--spacing-sm);
+}
+
+.department-card p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}

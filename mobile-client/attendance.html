@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mark Attendance - HRMS</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Mark Attendance</h1>
+            <p class="subtitle">Look at the camera to check in</p>
+        </div>
+
+        <div class="card">
+            <div id="cameraSection" class="camera-section">
+                <div class="camera-container">
+                    <video id="video" autoplay playsinline></video>
+                    <canvas id="canvas" class="hidden"></canvas>
+
+                    <div class="face-guide">
+                        <div class="face-oval"></div>
+                        <div class="scan-line scanning"></div>
+                    </div>
+
+                    <div class="camera-instructions">
+                        <p>Position your face within the oval</p>
+                    </div>
+                </div>
+
+                <div class="camera-controls">
+                    <button type="button" class="btn-capture" id="captureBtn">
+                        <span class="capture-icon"></span>
+                        Check In
+                    </button>
+                </div>
+            </div>
+
+            <div id="loadingSection" class="loading-section hidden">
+                <div class="spinner"></div>
+                <p>Recognizing your face...</p>
+            </div>
+
+            <div id="successSection" class="success-section hidden">
+                <div class="success-icon">✓</div>
+                <h2 id="successName">Welcome!</h2>
+                <p id="successMessage" class="success-message">Attendance marked successfully.</p>
+                <div class="attendance-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Time:</span>
+                        <span class="detail-value" id="checkInTime">--:--</span>
+                    </div>
+                    <div class="detail-item" id="workHoursContainer" style="display: none;">
+                        <span class="detail-label">Hours Worked:</span>
+                        <span class="detail-value" id="workHours">-- hrs</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Confidence:</span>
+                        <span class="detail-value" id="confidence">--%</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-primary" onclick="location.reload()">
+                    Done
+                </button>
+            </div>
+
+            <div id="errorSection" class="error-section hidden">
+                <div class="error-icon">✕</div>
+                <h2>Recognition Failed</h2>
+                <p id="errorMessage">Face not recognized.</p>
+                <button type="button" class="btn-primary" id="retryBtn">
+                    Try Again
+                </button>
+                <a href="register.html" class="link-secondary">Not registered? Register here</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="camera.js"></script>
+    <script>
+        // Configuration
+        const API_URL = 'https://michele-intrinsic-desolatingly.ngrok-free.dev'; // Local network IP - access from mobile on same WiFi
+
+        let videoStream = null;
+
+        // Start camera on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await startCamera();
+        });
+
+        // Start camera
+        async function startCamera() {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: 1280, height: 720 }
+                });
+                document.getElementById('video').srcObject = videoStream;
+            } catch (error) {
+                console.error('Camera access denied:', error);
+                showError('Camera access denied. Please allow camera access and try again.');
+            }
+        }
+
+        // Stop camera
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+        }
+
+        // Capture and check in
+        document.getElementById('captureBtn').addEventListener('click', async () => {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+
+            // Set canvas size to video size
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // Draw video frame to canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convert to base64
+            const imageData = canvas.toDataURL('image/jpeg', 0.8);
+
+            // Stop camera
+            stopCamera();
+
+            // Show loading
+            showSection('loadingSection');
+
+            // Submit attendance
+            await submitAttendance(imageData);
+        });
+
+        // Submit attendance
+        async function submitAttendance(faceImage) {
+            try {
+                const payload = {
+                    face_image: faceImage
+                };
+
+                const response = await fetch(`${API_URL}/attendance/check-in`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.recognized) {
+                    const now = new Date();
+                    const timeString = now.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+
+                    showSuccess(
+                        result.employee_name,
+                        result.message,
+                        timeString,
+                        result.confidence_score
+                    );
+                } else {
+                    showError(result.message || result.detail || 'Face not recognized');
+                }
+            } catch (error) {
+                console.error('Attendance error:', error);
+                showError('Network error. Please check your connection and try again.');
+            }
+        }
+
+        // Retry
+        document.getElementById('retryBtn').addEventListener('click', async () => {
+            showSection('cameraSection');
+            await startCamera();
+        });
+
+        // Show section
+        function showSection(sectionId) {
+            const sections = ['cameraSection', 'loadingSection', 'successSection', 'errorSection'];
+            sections.forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(sectionId).classList.remove('hidden');
+        }
+
+        // Show success
+        function showSuccess(name, message, time, confidence, workHours = null) {
+            // Extract just the name from the message if it contains "Welcome" or "Thank you"
+            const displayName = name;
+
+            // Set the title based on message type
+            if (message.includes('Welcome')) {
+                document.getElementById('successName').textContent = `Welcome, ${displayName}!`;
+                document.getElementById('workHoursContainer').style.display = 'none';
+            } else if (message.includes('Thank you')) {
+                document.getElementById('successName').textContent = `Thank you, ${displayName}!`;
+                // Extract hours from message if present
+                const hoursMatch = message.match(/(\d+\.\d+) hours/);
+                if (hoursMatch) {
+                    document.getElementById('workHours').textContent = `${hoursMatch[1]} hrs`;
+                    document.getElementById('workHoursContainer').style.display = 'flex';
+                }
+            } else {
+                document.getElementById('successName').textContent = displayName;
+                document.getElementById('workHoursContainer').style.display = 'none';
+            }
+
+            document.getElementById('successMessage').textContent = message;
+            document.getElementById('checkInTime').textContent = time;
+            document.getElementById('confidence').textContent = `${(confidence * 100).toFixed(1)}%`;
+            showSection('successSection');
+        }
+
+        // Show error
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            showSection('errorSection');
+        }
+    </script>
+</body>
+
+</html>

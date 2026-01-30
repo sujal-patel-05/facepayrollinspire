@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Employee Registration - HRMS</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Employee Registration</h1>
+            <p class="subtitle">Register your face for attendance</p>
+        </div>
+
+        <div class="card">
+            <div id="formSection" class="form-section">
+                <form id="registrationForm">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required placeholder="your.email@company.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="employeeId">Employee ID</label>
+                        <input type="text" id="employeeId" name="employeeId" required placeholder="EMP001">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="department">Department</label>
+                        <select id="department" name="department" required>
+                            <option value="">Select Department</option>
+                        </select>
+                    </div>
+
+                    <button type="button" class="btn-primary" id="proceedBtn">
+                        Proceed to Face Capture
+                    </button>
+                </form>
+            </div>
+
+            <div id="cameraSection" class="camera-section hidden">
+                <div class="camera-container">
+                    <video id="video" autoplay playsinline></video>
+                    <canvas id="canvas" class="hidden"></canvas>
+
+                    <div class="face-guide">
+                        <div class="face-oval"></div>
+                        <div class="scan-line"></div>
+                    </div>
+
+                    <div class="camera-instructions">
+                        <p>Position your face within the oval</p>
+                    </div>
+                </div>
+
+                <div class="camera-controls">
+                    <button type="button" class="btn-capture" id="captureBtn">
+                        <span class="capture-icon"></span>
+                        Capture Face
+                    </button>
+                    <button type="button" class="btn-secondary" id="backBtn">
+                        Back to Form
+                    </button>
+                </div>
+            </div>
+
+            <div id="loadingSection" class="loading-section hidden">
+                <div class="spinner"></div>
+                <p>Processing your registration...</p>
+            </div>
+
+            <div id="successSection" class="success-section hidden">
+                <div class="success-icon">✓</div>
+                <h2 id="successName">Registration Successful!</h2>
+                <p id="successMessage">You can now mark attendance using face recognition.</p>
+                <button type="button" class="btn-primary" onclick="window.location.href='attendance.html'">
+                    Go to Attendance
+                </button>
+            </div>
+
+            <div id="errorSection" class="error-section hidden">
+                <div class="error-icon">✕</div>
+                <h2>Registration Failed</h2>
+                <p id="errorMessage">Please try again.</p>
+                <button type="button" class="btn-primary" id="retryBtn">
+                    Try Again
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="camera.js"></script>
+    <script>
+        // Configuration
+        const API_URL = 'https://michele-intrinsic-desolatingly.ngrok-free.dev'; // Local network IP - access from mobile on same WiFi
+
+        let formData = {};
+        let videoStream = null;
+
+        // Load departments on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadDepartments();
+        });
+
+        // Load departments from API
+        async function loadDepartments() {
+            try {
+                const response = await fetch(`${API_URL}/departments/list`);
+                const departments = await response.json();
+
+                const select = document.getElementById('department');
+                departments.forEach(dept => {
+                    const option = document.createElement('option');
+                    option.value = dept.id;
+                    option.textContent = dept.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Failed to load departments:', error);
+            }
+        }
+
+        // Proceed to camera
+        document.getElementById('proceedBtn').addEventListener('click', async () => {
+            const form = document.getElementById('registrationForm');
+
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Store form data
+            formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                employee_id: document.getElementById('employeeId').value,
+                department_id: parseInt(document.getElementById('department').value)
+            };
+
+            // Show camera section
+            showSection('cameraSection');
+            await startCamera();
+        });
+
+        // Start camera
+        async function startCamera() {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: 1280, height: 720 }
+                });
+                document.getElementById('video').srcObject = videoStream;
+            } catch (error) {
+                console.error('Camera access denied:', error);
+                showError('Camera access denied. Please allow camera access and try again.');
+            }
+        }
+
+        // Stop camera
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+        }
+
+        // Capture face
+        document.getElementById('captureBtn').addEventListener('click', async () => {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+
+            // Set canvas size to video size
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // Draw video frame to canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convert to base64
+            const imageData = canvas.toDataURL('image/jpeg', 0.8);
+
+            // Stop camera
+            stopCamera();
+
+            // Show loading
+            showSection('loadingSection');
+
+            // Submit registration
+            await submitRegistration(imageData);
+        });
+
+        // Submit registration
+        async function submitRegistration(faceImage) {
+            try {
+                const payload = {
+                    ...formData,
+                    face_image: faceImage
+                };
+
+                const response = await fetch(`${API_URL}/employees/register-face`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.recognized) {
+                    showSuccess(result.employee_name, result.message);
+                } else {
+                    showError(result.message || result.detail || 'Registration failed');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showError('Network error. Please check your connection and try again.');
+            }
+        }
+
+        // Back to form
+        document.getElementById('backBtn').addEventListener('click', () => {
+            stopCamera();
+            showSection('formSection');
+        });
+
+        // Retry
+        document.getElementById('retryBtn').addEventListener('click', () => {
+            showSection('formSection');
+        });
+
+        // Show section
+        function showSection(sectionId) {
+            const sections = ['formSection', 'cameraSection', 'loadingSection', 'successSection', 'errorSection'];
+            sections.forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(sectionId).classList.remove('hidden');
+        }
+
+        // Show success
+        function showSuccess(name, message) {
+            document.getElementById('successName').textContent = `Welcome, ${name}!`;
+            document.getElementById('successMessage').textContent = message;
+            showSection('successSection');
+        }
+
+        // Show error
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            showSection('errorSection');
+        }
+    </script>
+</body>
+
+</html>
