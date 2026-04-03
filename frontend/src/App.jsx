@@ -6,6 +6,8 @@ import Attendance from './pages/Attendance';
 import Departments from './pages/Departments';
 import Payroll from './pages/Payroll';
 import Analytics from './pages/Analytics';
+import ScanAttendance from './pages/ScanAttendance';
+import RegisterFace from './pages/RegisterFace';
 import './styles/global.css';
 
 function App() {
@@ -15,6 +17,10 @@ function App() {
                 {/* Redirect root to dashboard */}
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+
+                {/* Standalone Kiosk Mode Pages */}
+                <Route path="/scan-attendance" element={<ScanAttendance />} />
+                <Route path="/register-face" element={<RegisterFace />} />
 
                 {/* All pages directly accessible without login */}
                 <Route

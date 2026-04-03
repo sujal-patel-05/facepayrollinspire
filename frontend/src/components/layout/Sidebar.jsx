@@ -10,6 +10,8 @@ import {
     PanelLeftClose,
     PanelLeft,
     Scan,
+    Camera,
+    UserPlus
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -24,6 +26,11 @@ const Sidebar = ({ collapsed, onToggle }) => {
         { path: '/departments', icon: Building2, label: 'Departments' },
         { path: '/payroll', icon: DollarSign, label: 'Payroll' },
         { path: '/analytics', icon: BarChart3, label: 'Analytics' },
+    ];
+
+    const kioskItems = [
+        { path: '/scan-attendance', icon: Camera, label: 'Launch Scanner' },
+        { path: '/register-face', icon: UserPlus, label: 'Register Face' },
     ];
 
     return (
@@ -72,6 +79,29 @@ const Sidebar = ({ collapsed, onToggle }) => {
                         title={collapsed ? item.label : undefined}
                     >
                         <item.icon size={18} />
+                        {!collapsed && <span>{item.label}</span>}
+                    </NavLink>
+                ))}
+
+                {!collapsed && (
+                    <div className="nav-section-label" style={{ marginTop: '20px', color: '#10b981' }}>KIOSK MODE</div>
+                )}
+                {collapsed && <div className="nav-divider" />}
+
+                {kioskItems.map((item) => (
+                    <NavLink
+                        key={item.path}
+                        to={item.path}
+                        onClick={(e) => {
+                            // Optionally open scanner in new tab so they don't lose admin context
+                            // Let's just do normal routing for now
+                        }}
+                        className={({ isActive }) =>
+                            `nav-item ${isActive ? 'active' : ''}`
+                        }
+                        title={collapsed ? item.label : undefined}
+                    >
+                        <item.icon size={18} color="#10b981" />
                         {!collapsed && <span>{item.label}</span>}
                     </NavLink>
                 ))}
