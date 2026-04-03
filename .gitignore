@@ -53,3 +53,8 @@ models/
 # Logs
 logs/
 *.log
+
+# Pandoc Local Binaries
+backend/pandoc*/
+backend/pandoc*.tar.gz
+backend/pandoc*.deb

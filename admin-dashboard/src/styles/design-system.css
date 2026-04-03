@@ -1,0 +1,204 @@
+/* ═══════════════════════════════════════════════════
+   FaceAI Admin — "Obsidian Command Center" Design System
+   ═══════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+/* ── Dark Theme (Default) ── */
+:root {
+    /* Backgrounds */
+    --bg-base: #0A0B0F;
+    --bg-surface: #111318;
+    --bg-elevated: #1A1D24;
+    --bg-hover: #1F2330;
+
+    /* Borders */
+    --border-subtle: rgba(255, 255, 255, 0.06);
+    --border-default: rgba(255, 255, 255, 0.10);
+    --border-focus: rgba(79, 142, 247, 0.50);
+
+    /* Primary */
+    --primary: #4F8EF7;
+    --primary-hover: #6BA3F9;
+    --primary-subtle: rgba(79, 142, 247, 0.10);
+    --primary-glow: rgba(79, 142, 247, 0.20);
+
+    /* Text */
+    --text-primary: #EAEDF5;
+    --text-secondary: #7A8BAD;
+    --text-muted: #3D4D6A;
+    --text-inverse: #0A0B0F;
+
+    /* Status */
+    --success: #00E87A;
+    --success-subtle: rgba(0, 232, 122, 0.10);
+    --warning: #FFB020;
+    --warning-subtle: rgba(255, 176, 32, 0.10);
+    --error: #FF3B5C;
+    --error-subtle: rgba(255, 59, 92, 0.10);
+    --info: #4F8EF7;
+    --info-subtle: rgba(79, 142, 247, 0.10);
+
+    /* Typography */
+    --font-ui: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'DM Mono', 'IBM Plex Mono', monospace;
+
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-2xl: 48px;
+
+    /* Radii */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+
+    /* Transitions */
+    --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
+
+    /* Sidebar */
+    --sidebar-width: 240px;
+    --sidebar-collapsed: 60px;
+    --topbar-height: 60px;
+}
+
+/* ── Light Theme ── */
+.light-mode {
+    --bg-base: #F8F9FC;
+    --bg-surface: #FFFFFF;
+    --bg-elevated: #F0F2F7;
+    --bg-hover: #E8EBF2;
+
+    --border-subtle: rgba(0, 0, 0, 0.06);
+    --border-default: rgba(0, 0, 0, 0.10);
+    --border-focus: rgba(79, 142, 247, 0.50);
+
+    --text-primary: #1A1D24;
+    --text-secondary: #5E6B82;
+    --text-muted: #9AA3B5;
+    --text-inverse: #FFFFFF;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.15);
+}
+
+/* ── Keyframes ── */
+@keyframes fadeEnter {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(100%);
+    }
+}
+
+/* ── Page entrance stagger ── */
+.stagger-enter>* {
+    opacity: 0;
+    animation: fadeEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.stagger-enter>*:nth-child(1) {
+    animation-delay: 0.06s;
+}
+
+.stagger-enter>*:nth-child(2) {
+    animation-delay: 0.12s;
+}
+
+.stagger-enter>*:nth-child(3) {
+    animation-delay: 0.18s;
+}
+
+.stagger-enter>*:nth-child(4) {
+    animation-delay: 0.24s;
+}
+
+.stagger-enter>*:nth-child(5) {
+    animation-delay: 0.30s;
+}
+
+.stagger-enter>*:nth-child(6) {
+    animation-delay: 0.36s;
+}
+
+/* ── Skeleton Loading ── */
+.skeleton {
+    background: var(--bg-elevated);
+    background: linear-gradient(90deg,
+            var(--bg-elevated) 25%,
+            var(--bg-hover) 50%,
+            var(--bg-elevated) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+    border-radius: var(--radius-sm);
+}
+
+.skeleton-text {
+    height: 14px;
+    margin-bottom: 8px;
+    width: 80%;
+}
+
+.skeleton-title {
+    height: 24px;
+    margin-bottom: 12px;
+    width: 50%;
+}
+
+.skeleton-circle {
+    border-radius: 50%;
+}

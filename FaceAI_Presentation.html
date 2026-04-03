@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-Powered Face Recognition HRMS — Presentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-dark: #0a0a1a;
+    --bg-card: rgba(255,255,255,0.04);
+    --accent-blue: #4f8cff;
+    --accent-purple: #a855f7;
+    --accent-pink: #ec4899;
+    --accent-green: #22d3ee;
+    --accent-orange: #f97316;
+    --text-primary: #f0f0f5;
+    --text-secondary: #9ca3af;
+    --gradient-1: linear-gradient(135deg, #4f8cff, #a855f7);
+    --gradient-2: linear-gradient(135deg, #ec4899, #f97316);
+    --gradient-3: linear-gradient(135deg, #22d3ee, #4f8cff);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  .slide {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    padding: 60px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide.active { display: flex; flex-direction: column; justify-content: center; }
+
+  /* Animated background blobs */
+  .slide::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(79,140,255,0.08), transparent 70%);
+    top: -200px; right: -200px;
+    animation: float 12s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .slide::after {
+    content: '';
+    position: absolute;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(168,85,247,0.06), transparent 70%);
+    bottom: -150px; left: -150px;
+    animation: float 15s ease-in-out infinite reverse;
+    pointer-events: none;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(30px, -30px) scale(1.1); }
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeInLeft {
+    from { opacity: 0; transform: translateX(-40px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .slide.active > * {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+  }
+  .slide.active > *:nth-child(1) { animation-delay: 0.1s; }
+  .slide.active > *:nth-child(2) { animation-delay: 0.25s; }
+  .slide.active > *:nth-child(3) { animation-delay: 0.4s; }
+  .slide.active > *:nth-child(4) { animation-delay: 0.55s; }
+  .slide.active > *:nth-child(5) { animation-delay: 0.7s; }
+  .slide.active > *:nth-child(6) { animation-delay: 0.85s; }
+
+  /* Title slide */
+  .title-slide { align-items: center; text-align: center; justify-content: center; }
+  .title-slide h1 {
+    font-size: 3.6rem;
+    font-weight: 900;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.15;
+    margin-bottom: 20px;
+    letter-spacing: -1px;
+  }
+  .title-slide .subtitle {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    font-weight: 300;
+    margin-bottom: 40px;
+  }
+  .title-slide .meta {
+    font-size: 1rem;
+    color: var(--accent-blue);
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .title-slide .tagline {
+    margin-top: 30px;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    border: 1px solid rgba(79,140,255,0.3);
+    padding: 12px 28px;
+    border-radius: 50px;
+    display: inline-block;
+  }
+
+  /* Section headers */
+  h2 {
+    font-size: 2.6rem;
+    font-weight: 800;
+    margin-bottom: 30px;
+    line-height: 1.2;
+  }
+  h2 .gradient { background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  h2 .gradient-pink { background: var(--gradient-2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  h2 .gradient-cyan { background: var(--gradient-3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  h3 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--accent-blue);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  p, li {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  ul { list-style: none; padding: 0; }
+  ul li {
+    padding: 8px 0;
+    padding-left: 28px;
+    position: relative;
+  }
+  ul li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--accent-blue);
+    font-size: 1.2rem;
+  }
+
+  /* Card grid */
+  .card-grid {
+    display: grid;
+    gap: 20px;
+    margin-top: 10px;
+  }
+  .card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .card-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 28px;
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(79,140,255,0.3);
+  }
+  .card .icon {
+    font-size: 2.2rem;
+    margin-bottom: 14px;
+    display: block;
+  }
+  .card h4 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+  .card p {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* Pipeline flow */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .pipeline-step {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 18px 22px;
+    text-align: center;
+    min-width: 140px;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .pipeline-step:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(79,140,255,0.15);
+  }
+  .pipeline-step .step-icon { font-size: 1.8rem; margin-bottom: 8px; display: block; }
+  .pipeline-step .step-label { font-size: 0.85rem; color: var(--text-primary); font-weight: 600; }
+  .pipeline-step .step-detail { font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; }
+  .pipeline-arrow { font-size: 1.5rem; color: var(--accent-blue); }
+
+  /* Stats row */
+  .stats-row {
+    display: flex;
+    gap: 30px;
+    margin: 20px 0;
+    justify-content: center;
+  }
+  .stat-box {
+    text-align: center;
+    padding: 20px 30px;
+    background: var(--bg-card);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    min-width: 160px;
+  }
+  .stat-box .stat-value {
+    font-size: 2.4rem;
+    font-weight: 900;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-box .stat-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Code block */
+  .code-block {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 20px 24px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.9rem;
+    color: #e2e8f0;
+    overflow-x: auto;
+    line-height: 1.6;
+    margin: 10px 0;
+  }
+  .code-block .keyword { color: #c084fc; }
+  .code-block .func { color: #60a5fa; }
+  .code-block .string { color: #34d399; }
+  .code-block .comment { color: #6b7280; }
+  .code-block .number { color: #fbbf24; }
+
+  /* Table */
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+  }
+  .comparison-table th {
+    background: rgba(79,140,255,0.15);
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-blue);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .comparison-table td {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .comparison-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* Highlight box */
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(79,140,255,0.1), rgba(168,85,247,0.1));
+    border: 1px solid rgba(79,140,255,0.2);
+    border-radius: 16px;
+    padding: 24px 30px;
+    margin: 16px 0;
+  }
+  .highlight-box.pink {
+    background: linear-gradient(135deg, rgba(236,72,153,0.1), rgba(249,115,22,0.1));
+    border-color: rgba(236,72,153,0.2);
+  }
+  .highlight-box.green {
+    background: linear-gradient(135deg, rgba(34,211,238,0.1), rgba(79,140,255,0.1));
+    border-color: rgba(34,211,238,0.2);
+  }
+
+  /* Navigation */
+  .nav-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 40px;
+    background: rgba(10,10,26,0.85);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    z-index: 100;
+  }
+  .nav-bar .slide-counter {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .nav-bar .progress-bar {
+    flex: 1;
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 10px;
+    margin: 0 30px;
+    overflow: hidden;
+  }
+  .nav-bar .progress-fill {
+    height: 100%;
+    background: var(--gradient-1);
+    border-radius: 10px;
+    transition: width 0.4s ease;
+  }
+  .nav-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-primary);
+    padding: 8px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background 0.3s;
+  }
+  .nav-btn:hover { background: rgba(79,140,255,0.2); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+  .two-col-wide { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; align-items: start; }
+
+  /* Badge */
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .badge.blue { background: rgba(79,140,255,0.15); color: var(--accent-blue); }
+  .badge.purple { background: rgba(168,85,247,0.15); color: var(--accent-purple); }
+  .badge.pink { background: rgba(236,72,153,0.15); color: var(--accent-pink); }
+  .badge.green { background: rgba(34,211,238,0.15); color: var(--accent-green); }
+</style>
+</head>
+<body>
+
+<!-- ========== SLIDE 1: TITLE ========== -->
+<div class="slide title-slide active" id="slide-1">
+  <div class="meta">MSc Big Data Analytics — Internship Project</div>
+  <h1>AI-Powered Face Recognition<br>for HR Management</h1>
+  <div class="subtitle">Deep Learning · Computer Vision · Privacy-by-Design</div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-value">ResNet‑50</div><div class="stat-label">CNN Backbone</div></div>
+    <div class="stat-box"><div class="stat-value">ArcFace</div><div class="stat-label">Loss Function</div></div>
+    <div class="stat-box"><div class="stat-value">512‑D</div><div class="stat-label">Embeddings</div></div>
+    <div class="stat-box"><div class="stat-value">&lt; 2s</div><div class="stat-label">Recognition</div></div>
+  </div>
+  <div class="tagline">🔒 Zero images stored · 100% on-premise AI · Open-source stack</div>
+</div>
+
+<!-- ========== SLIDE 2: PROBLEM STATEMENT ========== -->
+<div class="slide" id="slide-2">
+  <h3>The Problem</h3>
+  <h2>Why Traditional Attendance <span class="gradient-pink">Fails</span></h2>
+  <div class="card-grid cols-4" style="margin-top: 20px;">
+    <div class="card">
+      <span class="icon">🪪</span>
+      <h4>Buddy Punching</h4>
+      <p>RFID cards shared between employees. Costs US employers ~$373M/year.</p>
+    </div>
+    <div class="card">
+      <span class="icon">🦠</span>
+      <h4>Hygiene Risk</h4>
+      <p>Fingerprint scanners touched 400+ times/day — post-COVID concern.</p>
+    </div>
+    <div class="card">
+      <span class="icon">💰</span>
+      <h4>Hardware Costs</h4>
+      <p>₹15K–50K per fingerprint terminal. Scales poorly across branches.</p>
+    </div>
+    <div class="card">
+      <span class="icon">📊</span>
+      <h4>Zero Analytics</h4>
+      <p>Traditional systems only log timestamps — no patterns, no insights.</p>
+    </div>
+  </div>
+  <div class="highlight-box pink" style="margin-top: 24px;">
+    <p style="font-size: 1.1rem; color: var(--text-primary);">
+      <strong>Our Solution:</strong> AI-based, touchless, privacy-preserving face recognition using the employee's own phone — <strong>zero hardware cost</strong>, <strong>built-in analytics</strong>, and <strong>no images stored</strong>.
+    </p>
+  </div>
+</div>
+
+<!-- ========== SLIDE 3: AI PIPELINE OVERVIEW ========== -->
+<div class="slide" id="slide-3">
+  <h3>Core AI Pipeline</h3>
+  <h2>From <span class="gradient">Camera to Identity</span> — End to End</h2>
+  <div class="pipeline" style="margin-top: 30px;">
+    <div class="pipeline-step">
+      <span class="step-icon">📸</span>
+      <span class="step-label">Capture</span>
+      <span class="step-detail">Phone Camera → Base64</span>
+    </div>
+    <span class="pipeline-arrow">→</span>
+    <div class="pipeline-step">
+      <span class="step-icon">🔍</span>
+      <span class="step-label">Face Detection</span>
+      <span class="step-detail">InspireFace Engine</span>
+    </div>
+    <span class="pipeline-arrow">→</span>
+    <div class="pipeline-step">
+      <span class="step-icon">🧠</span>
+      <span class="step-label">ResNet‑50</span>
+      <span class="step-detail">Feature Extraction</span>
+    </div>
+    <span class="pipeline-arrow">→</span>
+    <div class="pipeline-step" style="border-color: rgba(168,85,247,0.3);">
+      <span class="step-icon">📐</span>
+      <span class="step-label">512‑D Embedding</span>
+      <span class="step-detail">L2 Normalised Vector</span>
+    </div>
+    <span class="pipeline-arrow">→</span>
+    <div class="pipeline-step">
+      <span class="step-icon">🔄</span>
+      <span class="step-label">Cosine Similarity</span>
+      <span class="step-detail">vs All Stored Faces</span>
+    </div>
+    <span class="pipeline-arrow">→</span>
+    <div class="pipeline-step" style="border-color: rgba(34,211,238,0.3);">
+      <span class="step-icon">✅</span>
+      <span class="step-label">Identity Match</span>
+      <span class="step-detail">Threshold ≥ 0.6</span>
+    </div>
+  </div>
+
+  <div class="two-col" style="margin-top: 30px;">
+    <div class="highlight-box">
+      <h4 style="color: var(--accent-blue); margin-bottom: 8px;">🔑 Key Insight</h4>
+      <p style="font-size: 1rem;">Each face becomes a <strong>512-dimensional mathematical fingerprint</strong> (just 2,048 bytes). The model doesn't classify — it maps faces into a shared vector space where <em>distance = dissimilarity</em>.</p>
+    </div>
+    <div class="highlight-box green">
+      <h4 style="color: var(--accent-green); margin-bottom: 8px;">🔒 Privacy Guarantee</h4>
+      <p style="font-size: 1rem;">Original image is <strong>discarded from memory</strong> after embedding extraction. Only the irreversible mathematical vector is stored. <strong>No face can be reconstructed.</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SLIDE 4: CNN + ResNet-50 ========== -->
+<div class="slide" id="slide-4">
+  <h3>Deep Learning Architecture</h3>
+  <h2><span class="gradient">ResNet‑50</span> — The CNN Backbone</h2>
+  <div class="two-col" style="margin-top: 10px;">
+    <div>
+      <p style="margin-bottom: 16px;">A 50-layer deep Convolutional Neural Network with <strong>~25.6M parameters</strong> that transforms a 112×112 face image into a 512-D vector.</p>
+
+      <h4 style="color: var(--accent-purple); margin: 16px 0 10px;">🧱 Hierarchical Feature Learning</h4>
+      <ul>
+        <li><strong>Layer 1:</strong> Edges, gradients, basic textures</li>
+        <li><strong>Layer 2:</strong> Corners, curves, patterns</li>
+        <li><strong>Layer 3:</strong> Eyes, nose, mouth shapes</li>
+        <li><strong>Layer 4+:</strong> Holistic face structure & identity</li>
+      </ul>
+
+      <div class="highlight-box" style="margin-top: 16px;">
+        <h4 style="color: var(--accent-blue); margin-bottom: 6px;">⚡ Skip Connections (Residual Learning)</h4>
+        <p style="font-size: 0.95rem;">Output = F(x) + x — learn the <em>residual</em>, not the full mapping. This solves the degradation problem in deep networks.</p>
+      </div>
+    </div>
+    <div>
+      <table class="comparison-table">
+        <thead><tr><th>Layer Group</th><th>Blocks</th><th>Resolution</th><th>Channels</th></tr></thead>
+        <tbody>
+          <tr><td>Conv1</td><td>1 (7×7)</td><td>56 × 56</td><td>64</td></tr>
+          <tr><td>Conv2_x</td><td>3 bottleneck</td><td>56 × 56</td><td>256</td></tr>
+          <tr><td>Conv3_x</td><td>4 bottleneck</td><td>28 × 28</td><td>512</td></tr>
+          <tr><td>Conv4_x</td><td>6 bottleneck</td><td>14 × 14</td><td>1024</td></tr>
+          <tr><td>Conv5_x</td><td>3 bottleneck</td><td>7 × 7</td><td>2048</td></tr>
+          <tr><td>GAP + FC</td><td>—</td><td>1 × 1</td><td><strong>512</strong></td></tr>
+        </tbody>
+      </table>
+      <div class="stats-row" style="margin-top: 20px;">
+        <div class="stat-box"><div class="stat-value">25.6M</div><div class="stat-label">Parameters</div></div>
+        <div class="stat-box"><div class="stat-value">50</div><div class="stat-label">Layers Deep</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SLIDE 5: ArcFace Loss ========== -->
+<div class="slide" id="slide-5">
+  <h3>Training Methodology</h3>
+  <h2><span class="gradient-pink">ArcFace</span> — Additive Angular Margin Loss</h2>
+  <div class="two-col" style="margin-top: 10px;">
+    <div>
+      <p style="margin-bottom: 16px;">ArcFace (Deng et al., 2019) operates in <strong>angular space</strong> to create tighter, more discriminative face clusters.</p>
+
+      <div class="code-block" style="font-size: 0.85rem;">
+        <span class="comment">// ArcFace Loss Formula</span><br>
+        L = -log( <span class="func">exp</span>(<span class="number">s</span> · <span class="func">cos</span>(θ<sub>yi</sub> + <span class="number">m</span>)) / <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="func">exp</span>(<span class="number">s</span> · <span class="func">cos</span>(θ<sub>yi</sub> + <span class="number">m</span>)) + Σ<sub>j≠yi</sub> <span class="func">exp</span>(<span class="number">s</span> · <span class="func">cos</span>(θ<sub>j</sub>))) )<br><br>
+        <span class="comment">// Where:</span><br>
+        <span class="keyword">m</span> = <span class="number">0.5</span> &nbsp;  <span class="comment">// angular margin (radians)</span><br>
+        <span class="keyword">s</span> = <span class="number">64</span> &nbsp;&nbsp; <span class="comment">// scaling factor</span>
+      </div>
+
+      <h4 style="color: var(--accent-pink); margin: 16px 0 8px;">How It Works</h4>
+      <ul>
+        <li>L2-normalise both features & weights → unit sphere</li>
+        <li>Dot product = cosine of angle between vectors</li>
+        <li>Add angular margin <strong>m</strong> to the correct class</li>
+        <li>Forces tighter clusters with wider inter-class gaps</li>
+      </ul>
+    </div>
+    <div>
+      <table class="comparison-table">
+        <thead><tr><th>Loss Function</th><th>Margin Type</th><th>Year</th></tr></thead>
+        <tbody>
+          <tr><td>Softmax</td><td>None</td><td>—</td></tr>
+          <tr><td>SphereFace</td><td>Multiplicative angular</td><td>2017</td></tr>
+          <tr><td>CosFace</td><td>Additive cosine</td><td>2018</td></tr>
+          <tr style="background: rgba(236,72,153,0.08);"><td><strong>ArcFace ✓</strong></td><td><strong>Additive angular</strong></td><td><strong>2019</strong></td></tr>
+        </tbody>
+      </table>
+      <div class="highlight-box pink" style="margin-top: 16px;">
+        <h4 style="color: var(--accent-pink); margin-bottom: 6px;">Why ArcFace Wins</h4>
+        <p style="font-size: 0.95rem;"><strong>Constant angular margin</strong> at all angles — geometrically consistent separation on the hypersphere surface. No training instability unlike SphereFace.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SLIDE 6: InspireFace Engine & Embedding ========== -->
+<div class="slide" id="slide-6">
+  <h3>Implementation</h3>
+  <h2><span class="gradient-cyan">InspireFace</span> Engine & Embedding Matching</h2>
+  <div class="two-col" style="margin-top: 10px;">
+    <div>
+      <p style="margin-bottom: 12px;">InspireFace SDK wraps ArcFace + ResNet into a clean session-based API. We use the <span class="badge purple">Megatron</span> model variant for maximum accuracy.</p>
+
+      <div class="code-block" style="font-size: 0.82rem;">
+        <span class="comment"># Initialisation</span><br>
+        isf.<span class="func">reload</span>(<span class="string">"Megatron"</span>)<br>
+        session = isf.<span class="func">InspireFaceSession</span>(<br>
+        &nbsp;&nbsp;isf.HF_ENABLE_FACE_RECOGNITION,<br>
+        &nbsp;&nbsp;isf.HF_DETECT_MODE_ALWAYS_DETECT<br>
+        )<br><br>
+        <span class="comment"># Face detection + embedding</span><br>
+        faces = session.<span class="func">face_detection</span>(image)<br>
+        embedding = session.<span class="func">face_feature_extract</span>(image, face)<br><br>
+        <span class="comment"># L2 normalisation</span><br>
+        norm = np.linalg.<span class="func">norm</span>(embedding)<br>
+        embedding = embedding / norm<br><br>
+        <span class="comment"># Cosine similarity</span><br>
+        similarity = np.<span class="func">dot</span>(emb1, emb2)  <span class="comment"># since ||emb|| = 1</span>
+      </div>
+    </div>
+    <div>
+      <h4 style="color: var(--accent-green); margin-bottom: 12px;">📐 Cosine Similarity Matching</h4>
+      <div class="highlight-box green" style="margin-bottom: 16px;">
+        <p style="font-size: 0.95rem; text-align: center;">
+          cos(A, B) = <strong>A · B</strong> / (‖A‖ × ‖B‖)<br><br>
+          Since vectors are L2-normalised:<br>
+          <strong>cos(A, B) = A · B</strong> (simple dot product!)
+        </p>
+      </div>
+
+      <div class="card-grid cols-2">
+        <div class="card" style="text-align: center;">
+          <span class="icon">✅</span>
+          <h4>Score ≥ 0.6</h4>
+          <p>Identity confirmed, attendance logged</p>
+        </div>
+        <div class="card" style="text-align: center;">
+          <span class="icon">❌</span>
+          <h4>Score &lt; 0.6</h4>
+          <p>Face not recognised, rejected</p>
+        </div>
+      </div>
+
+      <div class="highlight-box" style="margin-top: 16px;">
+        <h4 style="color: var(--accent-blue); margin-bottom: 4px;">🔄 Fallback System</h4>
+        <p style="font-size: 0.9rem;">If InspireFace fails → automatic fallback to <strong>OpenCV Haar Cascade</strong> for degraded but functional detection.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SLIDE 7: Privacy & Performance ========== -->
+<div class="slide" id="slide-7">
+  <h3>Results</h3>
+  <h2>Performance & <span class="gradient">Privacy-by-Design</span></h2>
+  <div class="stats-row" style="margin: 20px 0;">
+    <div class="stat-box"><div class="stat-value">&lt; 2s</div><div class="stat-label">End-to-End Latency</div></div>
+    <div class="stat-box"><div class="stat-value">2,048</div><div class="stat-label">Bytes per Face</div></div>
+    <div class="stat-box"><div class="stat-value">CPU</div><div class="stat-label">No GPU Required</div></div>
+    <div class="stat-box"><div class="stat-value">0.6</div><div class="stat-label">Threshold Score</div></div>
+    <div class="stat-box"><div class="stat-value">₹0</div><div class="stat-label">Hardware Cost</div></div>
+  </div>
+  <div class="two-col">
+    <div>
+      <h4 style="color: var(--accent-green); margin-bottom: 12px;">🔒 Privacy Architecture</h4>
+      <div class="card" style="margin-bottom: 12px;">
+        <h4>No Image Storage</h4>
+        <p>Face images processed in-memory, then immediately discarded. Only the 512-D embedding vector is persisted as a BLOB.</p>
+      </div>
+      <div class="card" style="margin-bottom: 12px;">
+        <h4>Mathematically Irreversible</h4>
+        <p>512-D float32 vector → cannot reconstruct the original face. Information is lossy by design.</p>
+      </div>
+      <div class="card">
+        <h4>On-Premise Processing</h4>
+        <p>All AI runs locally. No biometric data sent to cloud. Full data sovereignty.</p>
+      </div>
+    </div>
+    <div>
+      <h4 style="color: var(--accent-purple); margin-bottom: 12px;">📊 Threshold Analysis</h4>
+      <table class="comparison-table">
+        <thead><tr><th>Threshold</th><th>FAR</th><th>FRR</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>0.4</td><td>High</td><td>Very Low</td><td>Too many false accepts</td></tr>
+          <tr><td>0.5</td><td>Moderate</td><td>Low</td><td>Occasional false accepts</td></tr>
+          <tr style="background: rgba(79,140,255,0.08);"><td><strong>0.6 ✓</strong></td><td><strong>Very Low</strong></td><td><strong>Low</strong></td><td><strong>Optimal balance</strong></td></tr>
+          <tr><td>0.7</td><td>Near Zero</td><td>Moderate</td><td>Frequent false rejects</td></tr>
+          <tr><td>0.8</td><td>Zero</td><td>High</td><td>Too strict</td></tr>
+        </tbody>
+      </table>
+      <div class="highlight-box" style="margin-top: 16px;">
+        <p style="font-size: 0.9rem;">
+          <strong>FAR</strong> = False Acceptance Rate (impostors accepted)<br>
+          <strong>FRR</strong> = False Rejection Rate (genuine users rejected)<br>
+          Threshold 0.6 was selected as the <strong>optimal trade-off</strong> after empirical testing.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SLIDE 8: System Architecture ========== -->
+<div class="slide" id="slide-8">
+  <h3>System Architecture</h3>
+  <h2>Three-Tier <span class="gradient-cyan">Full-Stack AI</span> System</h2>
+  <div class="card-grid cols-3" style="margin-top: 20px;">
+    <div class="card" style="border-top: 3px solid var(--accent-green);">
+      <span class="badge green" style="margin-bottom: 12px;">Presentation Layer</span>
+      <h4>Frontend Clients</h4>
+      <ul style="font-size: 0.9rem;">
+        <li>Mobile HTML5 + JS (Employee)</li>
+        <li>React.js 18 + Vite (Admin)</li>
+        <li>Recharts analytics dashboard</li>
+        <li>Camera API integration</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-purple);">
+      <span class="badge purple" style="margin-bottom: 12px;">Application Layer</span>
+      <h4>FastAPI Backend + AI Engine</h4>
+      <ul style="font-size: 0.9rem;">
+        <li>InspireFace (Megatron Model)</li>
+        <li>ResNet-50 → 512-D Embeddings</li>
+        <li>Cosine Similarity Matching</li>
+        <li>JWT Auth + REST API</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent-blue);">
+      <span class="badge blue" style="margin-bottom: 12px;">Data Layer</span>
+      <h4>SQLite + SQLAlchemy ORM</h4>
+      <ul style="font-size: 0.9rem;">
+        <li>Face embeddings as BLOBs</li>
+        <li>Attendance with confidence scores</li>
+        <li>Payroll computation</li>
+        <li>Analytics aggregation</li>
+      </ul>
+    </div>
+  </div>
+  <div class="highlight-box" style="margin-top: 24px;">
+    <p style="font-size: 1.05rem; color: var(--text-primary); text-align: center;">
+      <strong>100% Open-Source Stack</strong> — InspireFace + FastAPI + React + SQLite + OpenCV + NumPy → <strong>₹0 licensing cost</strong>
+    </p>
+  </div>
+</div>
+
+<!-- ========== SLIDE 9: Key Findings & Conclusion ========== -->
+<div class="slide" id="slide-9">
+  <h3>Conclusion</h3>
+  <h2>Key Findings & <span class="gradient-pink">Future Scope</span></h2>
+  <div class="two-col" style="margin-top: 10px;">
+    <div>
+      <h4 style="color: var(--accent-blue); margin-bottom: 12px;">✅ Key Findings</h4>
+      <div class="card" style="margin-bottom: 10px;">
+        <h4>🧠 ArcFace embeddings are highly discriminative</h4>
+        <p>Same-person scores: 0.7–0.95, Different-person scores: 0.1–0.4 — clear separation.</p>
+      </div>
+      <div class="card" style="margin-bottom: 10px;">
+        <h4>⚡ Real-time on CPU</h4>
+        <p>Full pipeline in &lt; 2 seconds, no GPU needed. InspireFace is production-grade.</p>
+      </div>
+      <div class="card" style="margin-bottom: 10px;">
+        <h4>🔐 Privacy is achievable without sacrificing accuracy</h4>
+        <p>Embedding-only storage proves that AI can be privacy-preserving by design.</p>
+      </div>
+      <div class="card">
+        <h4>📊 Attendance data has analytical value</h4>
+        <p>Trend analysis, department benchmarking, and automated payroll from structured time-series data.</p>
+      </div>
+    </div>
+    <div>
+      <h4 style="color: var(--accent-purple); margin-bottom: 12px;">🚀 Future Enhancements</h4>
+      <ul>
+        <li><strong>Anti-Spoofing / Liveness Detection</strong> to prevent photo attacks</li>
+        <li><strong>Multi-Face Recognition</strong> for group attendance in classrooms</li>
+        <li><strong>Edge Deployment</strong> with TensorRT/ONNX for on-device inference</li>
+        <li><strong>Predictive Analytics</strong> — attrition risk, workforce forecasting</li>
+        <li><strong>Cloud Migration</strong> with PostgreSQL + Redis for enterprise scale</li>
+      </ul>
+
+      <div class="highlight-box" style="margin-top: 24px;">
+        <h4 style="color: var(--accent-blue); margin-bottom: 8px;">🎓 Academic Relevance</h4>
+        <p style="font-size: 0.95rem;">This project integrates <strong>Deep Learning</strong> (ResNet-50), <strong>Computer Vision</strong> (face detection), <strong>Big Data Analytics</strong> (trend analysis), <strong>Database Systems</strong> (BLOB storage), and <strong>Software Engineering</strong> (REST APIs) — all core MSc BDA subjects.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SLIDE 10: THANK YOU ========== -->
+<div class="slide title-slide" id="slide-10">
+  <div class="meta">AI-POWERED FACE RECOGNITION HRMS</div>
+  <h1>Thank You</h1>
+  <div class="subtitle">Questions & Discussion</div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-value">ResNet‑50</div><div class="stat-label">Deep CNN</div></div>
+    <div class="stat-box"><div class="stat-value">ArcFace</div><div class="stat-label">Angular Margin</div></div>
+    <div class="stat-box"><div class="stat-value">InspireFace</div><div class="stat-label">SDK Engine</div></div>
+    <div class="stat-box"><div class="stat-value">512‑D</div><div class="stat-label">Face Embeddings</div></div>
+  </div>
+  <div class="tagline">Built with 🧠 Deep Learning · 👁 Computer Vision · 📊 Big Data Analytics</div>
+</div>
+
+<!-- Navigation Bar -->
+<div class="nav-bar">
+  <span class="slide-counter" id="slideCounter">1 / 10</span>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 10%"></div></div>
+  <button class="nav-btn" onclick="prevSlide()" id="prevBtn">← Prev</button>
+  <button class="nav-btn" onclick="nextSlide()" id="nextBtn">Next →</button>
+</div>
+
+<script>
+  let current = 1;
+  const total = 10;
+
+  function showSlide(n) {
+    document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+    document.getElementById(`slide-${n}`).classList.add('active');
+    document.getElementById('slideCounter').textContent = `${n} / ${total}`;
+    document.getElementById('progressFill').style.width = `${(n / total) * 100}%`;
+  }
+
+  function nextSlide() { if (current < total) { current++; showSlide(current); } }
+  function prevSlide() { if (current > 1) { current--; showSlide(current); } }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); nextSlide(); }
+    if (e.key === 'ArrowLeft' || e.key === 'Backspace') { e.preventDefault(); prevSlide(); }
+    if (e.key === 'Home') { current = 1; showSlide(1); }
+    if (e.key === 'End') { current = total; showSlide(total); }
+  });
+
+  // Touch support for mobile
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+  document.addEventListener('touchend', (e) => {
+    const diff = touchStartX - e.changedTouches[0].screenX;
+    if (Math.abs(diff) > 50) { diff > 0 ? nextSlide() : prevSlide(); }
+  });
+</script>
+</body>
+</html>

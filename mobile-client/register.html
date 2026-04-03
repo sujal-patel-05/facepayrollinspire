@@ -3,261 +3,375 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Employee Registration - HRMS</title>
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Register Face | FaceAI</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Employee Registration</h1>
-            <p class="subtitle">Register your face for attendance</p>
+
+    <div class="app-container">
+        <!-- Step Progress Bar -->
+        <div class="step-progress" id="step-progress">
+            <div class="segment active" id="seg-1"></div>
+            <div class="segment" id="seg-2"></div>
         </div>
 
-        <div class="card">
-            <div id="formSection" class="form-section">
-                <form id="registrationForm">
+        <!-- Header -->
+        <header class="app-header stagger-1">
+            <div class="brand-logo">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="color: var(--primary);">
+                    <path
+                        d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="12" cy="12" r="3" stroke-linecap="round" />
+                </svg>
+                FaceAI
+            </div>
+        </header>
+
+        <!-- STEP 1: Form -->
+        <div id="step-form" class="scroll-container fade-enter">
+            <div class="glass-card stagger-2" style="margin-top: 12px;">
+                <h1 style="margin-bottom: 6px;">New Employee</h1>
+                <p style="margin-bottom: 28px;">Register your profile to enable face attendance.</p>
+
+                <form id="regForm">
                     <div class="form-group">
-                        <label for="name">Full Name</label>
-                        <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                        <label>FULL NAME</label>
+                        <input type="text" id="name" class="form-input" placeholder="Sarah Connor" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" required placeholder="your.email@company.com">
+                        <label>EMAIL ADDRESS</label>
+                        <input type="email" id="email" class="form-input" placeholder="sarah@company.com" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="employeeId">Employee ID</label>
-                        <input type="text" id="employeeId" name="employeeId" required placeholder="EMP001">
+                        <label>EMPLOYEE ID</label>
+                        <input type="text" id="empId" class="form-input" placeholder="EMP-0000" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="department">Department</label>
-                        <select id="department" name="department" required>
-                            <option value="">Select Department</option>
+                        <label>DEPARTMENT</label>
+                        <select id="dept" class="form-input" required>
+                            <option value="" disabled selected>Select Department</option>
+                            <option value="1">Engineering</option>
+                            <option value="2">Human Resources</option>
+                            <option value="3">Sales</option>
                         </select>
                     </div>
 
-                    <button type="button" class="btn-primary" id="proceedBtn">
-                        Proceed to Face Capture
+                    <button type="button" class="btn btn-primary" id="btn-next" style="margin-top: 24px;">
+                        <span>Continue to Camera</span>
+                        <span class="btn-icon">→</span>
                     </button>
+
+                    <p class="subtitle" style="text-align: center; margin-top: 14px; font-size: 12px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" style="vertical-align: -2px; margin-right: 4px; color: var(--text-muted);">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        Secure & Private Registration
+                    </p>
                 </form>
             </div>
+        </div>
 
-            <div id="cameraSection" class="camera-section hidden">
-                <div class="camera-container">
-                    <video id="video" autoplay playsinline></video>
-                    <canvas id="canvas" class="hidden"></canvas>
+        <!-- STEP 2: Camera -->
+        <div id="step-camera" class="camera-wrapper hidden">
+            <video id="video" autoplay playsinline muted></video>
+            <canvas id="canvas" class="hidden"></canvas>
 
-                    <div class="face-guide">
-                        <div class="face-oval"></div>
-                        <div class="scan-line"></div>
-                    </div>
-
-                    <div class="camera-instructions">
-                        <p>Position your face within the oval</p>
-                    </div>
+            <div class="camera-overlay-ui">
+                <!-- Status pill top -->
+                <div class="status-pill" style="margin-top: 8px;">
+                    <div class="status-dot scanning"></div>
+                    <span id="camera-status-text">Position your face</span>
                 </div>
 
-                <div class="camera-controls">
-                    <button type="button" class="btn-capture" id="captureBtn">
-                        <span class="capture-icon"></span>
-                        Capture Face
-                    </button>
-                    <button type="button" class="btn-secondary" id="backBtn">
-                        Back to Form
-                    </button>
+                <!-- Face Guide with corner brackets -->
+                <div class="face-guide" id="face-guide">
+                    <div class="corner-bracket tl"></div>
+                    <div class="corner-bracket tr"></div>
+                    <div class="corner-bracket bl"></div>
+                    <div class="corner-bracket br"></div>
+                    <div class="scan-line"></div>
                 </div>
-            </div>
 
-            <div id="loadingSection" class="loading-section hidden">
-                <div class="spinner"></div>
-                <p>Processing your registration...</p>
-            </div>
+                <!-- Capture button -->
+                <div style="text-align: center; margin-bottom: 32px; pointer-events: none;">
+                    <div id="btn-capture" class="shutter-ring">
+                        <div class="shutter-inner">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                                <circle cx="12" cy="13" r="4" />
+                            </svg>
+                        </div>
+                    </div>
+                    <p
+                        style="margin-top: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); letter-spacing: 0.05em;">
+                        TAP TO CAPTURE
+                    </p>
+                </div>
 
-            <div id="successSection" class="success-section hidden">
-                <div class="success-icon">✓</div>
-                <h2 id="successName">Registration Successful!</h2>
-                <p id="successMessage">You can now mark attendance using face recognition.</p>
-                <button type="button" class="btn-primary" onclick="window.location.href='attendance.html'">
-                    Go to Attendance
-                </button>
-            </div>
-
-            <div id="errorSection" class="error-section hidden">
-                <div class="error-icon">✕</div>
-                <h2>Registration Failed</h2>
-                <p id="errorMessage">Please try again.</p>
-                <button type="button" class="btn-primary" id="retryBtn">
-                    Try Again
-                </button>
+                <!-- Back Button -->
+                <button id="btn-back" class="back-btn">← Back</button>
             </div>
         </div>
+
+        <!-- LOADING OVERLAY -->
+        <div id="overlay-loading" class="fullscreen-overlay hidden">
+            <div class="loading-spinner"></div>
+            <h2>Processing Profile...</h2>
+            <p style="font-family: 'IBM Plex Mono', monospace; font-size: 13px;">Creating face embeddings</p>
+        </div>
+
+        <!-- SUCCESS OVERLAY -->
+        <div id="overlay-success" class="fullscreen-overlay hidden">
+            <!-- Animated SVG Checkmark -->
+            <svg class="success-checkmark" viewBox="0 0 80 80">
+                <circle class="circle" cx="40" cy="40" r="36" />
+                <path class="check" d="M24 42 L34 52 L56 30" />
+            </svg>
+            <h2>Registration Complete!</h2>
+            <p id="success-msg">You can now use face attendance.</p>
+            <div class="employee-info-block" id="employee-info-block"></div>
+            <button class="btn btn-primary" onclick="window.location.href='attendance.html'">
+                Go to Attendance
+                <span class="btn-icon">→</span>
+            </button>
+        </div>
+
+        <!-- ERROR OVERLAY -->
+        <div id="overlay-error" class="fullscreen-overlay hidden">
+            <div class="icon-circle error">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </div>
+            <h2>Registration Failed</h2>
+            <p id="error-msg" style="margin-bottom: 28px;">Something went wrong.</p>
+            <button class="btn btn-secondary" onclick="resetCamera()">
+                Try Again
+            </button>
+        </div>
+
     </div>
 
     <script src="camera.js"></script>
     <script>
-        // Configuration
-        const API_URL = 'https://michele-intrinsic-desolatingly.ngrok-free.dev'; // Local network IP - access from mobile on same WiFi
+        // CONFIG
+        const API_URL = 'https://nonrectangularly-bulbless-malcolm.ngrok-free.dev';
 
-        let formData = {};
-        let videoStream = null;
+        let stream = null;
+        const state = {
+            name: '', email: '', empId: '', dept: ''
+        };
 
-        // Load departments on page load
+        // DOM Elements
+        const views = {
+            form: document.getElementById('step-form'),
+            camera: document.getElementById('step-camera'),
+            loading: document.getElementById('overlay-loading'),
+            success: document.getElementById('overlay-success'),
+            error: document.getElementById('overlay-error')
+        };
+
+        // --- INIT ---
         document.addEventListener('DOMContentLoaded', async () => {
-            await loadDepartments();
+            // Load Departments
+            try {
+                const res = await fetch(`${API_URL}/departments/list`);
+                const data = await res.json();
+                const sel = document.getElementById('dept');
+                sel.innerHTML = '<option value="" disabled selected>Select Department</option>';
+                data.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.id;
+                    opt.textContent = d.name;
+                    sel.appendChild(opt);
+                });
+            } catch (e) { console.error("Dept load failed", e); }
         });
 
-        // Load departments from API
-        async function loadDepartments() {
-            try {
-                const response = await fetch(`${API_URL}/departments/list`);
-                const departments = await response.json();
-
-                const select = document.getElementById('department');
-                departments.forEach(dept => {
-                    const option = document.createElement('option');
-                    option.value = dept.id;
-                    option.textContent = dept.name;
-                    select.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Failed to load departments:', error);
-            }
-        }
-
-        // Proceed to camera
-        document.getElementById('proceedBtn').addEventListener('click', async () => {
-            const form = document.getElementById('registrationForm');
-
+        // --- NAVIGATION ---
+        document.getElementById('btn-next').addEventListener('click', () => {
+            const form = document.getElementById('regForm');
             if (!form.checkValidity()) {
                 form.reportValidity();
                 return;
             }
 
-            // Store form data
-            formData = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                employee_id: document.getElementById('employeeId').value,
-                department_id: parseInt(document.getElementById('department').value)
-            };
+            // Save state
+            state.name = document.getElementById('name').value;
+            state.email = document.getElementById('email').value;
+            state.empId = document.getElementById('empId').value;
+            state.dept = document.getElementById('dept').value;
 
-            // Show camera section
-            showSection('cameraSection');
-            await startCamera();
+            // Update progress bar
+            document.getElementById('seg-2').classList.add('active');
+
+            // Switch view
+            views.form.classList.add('hidden');
+            views.camera.classList.remove('hidden');
+
+            startCamera();
         });
 
-        // Start camera
-        async function startCamera() {
-            try {
-                videoStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user', width: 1280, height: 720 }
-                });
-                document.getElementById('video').srcObject = videoStream;
-            } catch (error) {
-                console.error('Camera access denied:', error);
-                showError('Camera access denied. Please allow camera access and try again.');
-            }
-        }
-
-        // Stop camera
-        function stopCamera() {
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
-                videoStream = null;
-            }
-        }
-
-        // Capture face
-        document.getElementById('captureBtn').addEventListener('click', async () => {
-            const video = document.getElementById('video');
-            const canvas = document.getElementById('canvas');
-            const context = canvas.getContext('2d');
-
-            // Set canvas size to video size
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-
-            // Draw video frame to canvas
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            // Convert to base64
-            const imageData = canvas.toDataURL('image/jpeg', 0.8);
-
-            // Stop camera
+        document.getElementById('btn-back').addEventListener('click', () => {
             stopCamera();
-
-            // Show loading
-            showSection('loadingSection');
-
-            // Submit registration
-            await submitRegistration(imageData);
+            document.getElementById('seg-2').classList.remove('active');
+            views.camera.classList.add('hidden');
+            views.form.classList.remove('hidden');
         });
 
-        // Submit registration
-        async function submitRegistration(faceImage) {
+        // --- CAMERA ---
+        async function startCamera() {
+            // 1. SSL/Secure Context Check
+            if (!window.isSecureContext) {
+                alert("⚠️ Camera requires HTTPS!\n\nPlease use the 'https://' version of your Ngrok URL, not 'http://'.");
+                return;
+            }
+
             try {
-                const payload = {
-                    ...formData,
-                    face_image: faceImage
+                // 2. Browser Compatibility Check
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error("Camera API not supported in this browser");
+                }
+
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'user',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+
+                const videoEl = document.getElementById('video');
+                videoEl.srcObject = stream;
+
+                // Ensure video plays (fixes some mobile blocking issues)
+                videoEl.onloadedmetadata = () => {
+                    videoEl.play().catch(e => console.error("Play error:", e));
                 };
 
-                const response = await fetch(`${API_URL}/employees/register-face`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
+                // Update status
+                document.getElementById('camera-status-text').textContent = 'Position your face';
 
-                const result = await response.json();
+            } catch (e) {
+                console.error("Camera Error:", e);
+                let msg = "Camera access denied.";
+                if (e.name === 'NotAllowedError') msg = "Permission denied. Please allow camera access in settings.";
+                else if (e.name === 'NotFoundError') msg = "No camera found on this device.";
+                else if (e.name === 'NotReadableError') msg = "Camera is in use by another app.";
+                else if (e.name === 'OverconstrainedError') msg = "Camera doesn't match requirements.";
+                else if (e.name === 'SecurityError') msg = "Insecure context (HTTP). Use HTTPS.";
 
-                if (response.ok && result.recognized) {
-                    showSuccess(result.employee_name, result.message);
-                } else {
-                    showError(result.message || result.detail || 'Registration failed');
-                }
-            } catch (error) {
-                console.error('Registration error:', error);
-                showError('Network error. Please check your connection and try again.');
+                alert(`📷 Camera Error:\n${msg}\n(${e.name}: ${e.message})`);
             }
         }
 
-        // Back to form
-        document.getElementById('backBtn').addEventListener('click', () => {
+        function stopCamera() {
+            if (stream) stream.getTracks().forEach(t => t.stop());
+        }
+
+        // --- CAPTURE & SUBMIT ---
+        document.getElementById('btn-capture').addEventListener('click', async () => {
+            // Haptic
+            if (navigator.vibrate) navigator.vibrate(50);
+
+            // Update status
+            document.getElementById('camera-status-text').textContent = 'Capturing...';
+            document.querySelector('.status-dot').className = 'status-dot verifying';
+
+            // Capture
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const imageBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
             stopCamera();
-            showSection('formSection');
+            views.loading.classList.remove('hidden');
+
+            // API Call
+            try {
+                const res = await fetch(`${API_URL}/employees/register-face`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    },
+                    body: JSON.stringify({
+                        name: state.name,
+                        email: state.email,
+                        employee_id: state.empId,
+                        department_id: parseInt(state.dept),
+                        face_image: imageBase64
+                    })
+                });
+
+                const data = await res.json();
+                views.loading.classList.add('hidden');
+
+                if (res.ok && data.recognized) {
+                    // Show employee info
+                    document.getElementById('employee-info-block').textContent =
+                        `${state.name} · ${state.empId}`;
+
+                    views.success.classList.remove('hidden');
+                    createSonarPings();
+                } else {
+                    document.getElementById('error-msg').textContent = data.message || "Face not clear. Try again.";
+                    views.error.classList.remove('hidden');
+                }
+            } catch (e) {
+                views.loading.classList.add('hidden');
+                views.error.classList.remove('hidden');
+            }
         });
 
-        // Retry
-        document.getElementById('retryBtn').addEventListener('click', () => {
-            showSection('formSection');
-        });
+        // Create sonar ping particles on success
+        function createSonarPings() {
+            const container = views.success;
+            const directions = [
+                'translate(40px, -30px)', 'translate(-35px, -40px)',
+                'translate(50px, 20px)', 'translate(-45px, 15px)',
+                'translate(20px, 45px)', 'translate(-20px, 50px)',
+                'translate(35px, -45px)', 'translate(-50px, -20px)',
+                'translate(10px, -55px)', 'translate(-10px, 55px)',
+                'translate(55px, -10px)', 'translate(-55px, 10px)',
+            ];
 
-        // Show section
-        function showSection(sectionId) {
-            const sections = ['formSection', 'cameraSection', 'loadingSection', 'successSection', 'errorSection'];
-            sections.forEach(id => {
-                document.getElementById(id).classList.add('hidden');
+            directions.forEach((dir, i) => {
+                const dot = document.createElement('div');
+                dot.className = 'sonar-ping';
+                dot.style.setProperty('--ping-direction', dir);
+                dot.style.animationDelay = `${i * 0.05}s`;
+                dot.style.top = '50%';
+                dot.style.left = '50%';
+                container.appendChild(dot);
+
+                setTimeout(() => dot.remove(), 1200);
             });
-            document.getElementById(sectionId).classList.remove('hidden');
         }
 
-        // Show success
-        function showSuccess(name, message) {
-            document.getElementById('successName').textContent = `Welcome, ${name}!`;
-            document.getElementById('successMessage').textContent = message;
-            showSection('successSection');
-        }
-
-        // Show error
-        function showError(message) {
-            document.getElementById('errorMessage').textContent = message;
-            showSection('errorSection');
-        }
+        window.resetCamera = () => {
+            views.error.classList.add('hidden');
+            document.querySelector('.status-dot').className = 'status-dot scanning';
+            document.getElementById('camera-status-text').textContent = 'Position your face';
+            startCamera();
+        };
     </script>
 </body>
 

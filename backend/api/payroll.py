@@ -18,8 +18,9 @@ router = APIRouter(prefix="/payroll", tags=["Payroll"])
 @router.post("/calculate", response_model=PayrollResponse)
 async def calculate_payroll(
     payroll_data: PayrollCreate,
-    db: Session = Depends(get_db),
-    current_admin = Depends(get_current_admin)
+    db: Session = Depends(get_db)
+    # Removed authentication for public access
+    # Removed authentication for public access
 ):
     """
     Calculate and save payroll for an employee (admin only).
@@ -77,8 +78,8 @@ async def calculate_monthly_payroll(
     month: int,
     year: int,
     per_day_salary: float = 100.0,
-    db: Session = Depends(get_db),
-    current_admin = Depends(get_current_admin)
+    db: Session = Depends(get_db)
+    # Removed authentication for public access
 ):
     """
     Calculate payroll for all employees for a specific month (admin only).
@@ -165,8 +166,8 @@ async def calculate_monthly_payroll(
 async def get_payroll_summary(
     month: int = None,
     year: int = None,
-    db: Session = Depends(get_db),
-    current_admin = Depends(get_current_admin)
+    db: Session = Depends(get_db)
+    # Removed authentication for public access
 ):
     """Get payroll summary with filters (admin only)."""
     query = db.query(Payroll)

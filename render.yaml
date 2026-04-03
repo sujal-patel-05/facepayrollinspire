@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: faceai-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: DATABASE_URL
+        sync: false  # Set manually to your Supabase PostgreSQL connection string
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false  # Set to your Vercel frontend URL

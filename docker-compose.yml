@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: faceai-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/hrms.db:/app/hrms.db
+    restart: always
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: faceai-frontend
+    ports:
+      - "5173:80"
+    restart: always
+    depends_on:
+      - backend
+
+  admin-dashboard:
+    build:
+      context: ./admin-dashboard
+      dockerfile: Dockerfile
+    container_name: faceai-admin-dashboard
+    ports:
+      - "5174:80"
+    restart: always
+    depends_on:
+      - backend

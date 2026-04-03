@@ -161,7 +161,7 @@ async def get_attendance_history(
     end_date: Optional[date] = None,
     department_id: Optional[int] = None,
     db: Session = Depends(get_db),
-    current_admin = Depends(get_current_admin)
+    # Removed authentication for public access
 ):
     """Get attendance history with filters (admin only)."""
     query = db.query(Attendance)
@@ -183,7 +183,7 @@ async def get_employee_attendance(
     start_date: Optional[date] = None,
     end_date: Optional[date] = None,
     db: Session = Depends(get_db),
-    current_admin = Depends(get_current_admin)
+    # Removed authentication for public access
 ):
     """Get attendance records for a specific employee (admin only)."""
     query = db.query(Attendance).filter(Attendance.employee_id == employee_id)

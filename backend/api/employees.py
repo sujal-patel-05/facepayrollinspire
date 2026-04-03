@@ -147,7 +147,7 @@ async def list_employees(
 async def get_employee(
     employee_id: int,
     db: Session = Depends(get_db),
-    current_admin = Depends(get_current_admin)
+    # Removed authentication for public access
 ):
     """Get employee by ID (admin only)."""
     employee = db.query(Employee).filter(Employee.id == employee_id).first()

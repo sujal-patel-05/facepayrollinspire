@@ -3,229 +3,373 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mark Attendance - HRMS</title>
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Mark Attendance | FaceAI</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Mark Attendance</h1>
-            <p class="subtitle">Look at the camera to check in</p>
+
+    <div class="app-container">
+        <!-- MAIN CAMERA VIEW -->
+        <div class="camera-wrapper">
+            <video id="video" autoplay playsinline muted></video>
+            <canvas id="canvas" class="hidden"></canvas>
+
+            <div class="camera-overlay-ui">
+                <!-- Premium Scanner Viewport Mask -->
+                <div class="scanner-viewport" id="scanner-viewport"></div>
+
+                <!-- Header -->
+                <header class="app-header">
+                    <div class="brand-logo">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" style="color: var(--primary);">
+                            <path
+                                d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                            <circle cx="12" cy="12" r="3" stroke-linecap="round" />
+                        </svg>
+                        FaceAI
+                    </div>
+
+                    <div class="header-date" id="header-date"></div>
+
+                    <div class="header-clock" id="header-clock">00:00:00</div>
+                </header>
+
+                <!-- Scanning Orbital UI -->
+                <div class="scanning-orbital" id="scanning-orbital">
+                    <svg viewBox="0 0 320 360">
+                        <ellipse class="orbital-ring" cx="160" cy="180" rx="130" ry="160" />
+                        <ellipse class="pulsing-orbital" cx="160" cy="180" rx="130" ry="160" />
+                        <!-- Decorative Particles -->
+                        <circle class="particle" cx="160" cy="40" r="2" />
+                        <circle class="particle" cx="160" cy="320" r="2" />
+                        <circle class="particle" cx="40" cy="180" r="2" />
+                        <circle class="particle" cx="280" cy="180" r="2" />
+                    </svg>
+
+                    <!-- Viewfinder Corners (mounted on orbital for alignment) -->
+                    <div class="face-guide" id="face-guide">
+                        <div class="corner-bracket tl"></div>
+                        <div class="corner-bracket tr"></div>
+                        <div class="corner-bracket bl"></div>
+                        <div class="corner-bracket br"></div>
+                        <div class="scan-line"></div>
+                    </div>
+                </div>
+
+                <!-- Bottom section -->
+                <div style="text-align: center; margin-bottom: 28px; pointer-events: none; z-index: 10;">
+                    <!-- Status Pill -->
+                    <div class="status-pill" id="status-pill">
+                        <div class="status-dot scanning" id="status-dot"></div>
+                        <span id="status-text">Scanning</span>
+                    </div>
+
+                    <a href="register.html" class="register-link">
+                        New Employee? Register Here
+                    </a>
+                </div>
+            </div>
         </div>
 
-        <div class="card">
-            <div id="cameraSection" class="camera-section">
-                <div class="camera-container">
-                    <video id="video" autoplay playsinline></video>
-                    <canvas id="canvas" class="hidden"></canvas>
+        <!-- LOADING OVERLAY -->
+        <div id="overlay-loading" class="fullscreen-overlay hidden">
+            <div class="loading-spinner"></div>
+            <h2>Verifying Identity...</h2>
+            <p style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--text-muted);">Scanning face
+                embeddings</p>
+        </div>
 
-                    <div class="face-guide">
-                        <div class="face-oval"></div>
-                        <div class="scan-line scanning"></div>
+        <!-- SUCCESS OVERLAY (slide-up card) -->
+        <div id="overlay-success" class="hidden">
+            <div class="success-flash" id="success-flash"></div>
+            <div class="slide-up-overlay">
+                <div class="slide-up-card" id="success-card">
+                    <div class="check-icon">
+                        <svg width="48" height="48" viewBox="0 0 80 80">
+                            <circle cx="40" cy="40" r="36" fill="none" stroke="var(--success)" stroke-width="2"
+                                stroke-dasharray="252" stroke-dashoffset="252"
+                                style="animation: drawCircle 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;" />
+                            <path d="M24 42 L34 52 L56 30" fill="none" stroke="var(--success)" stroke-width="3"
+                                stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="50"
+                                stroke-dashoffset="50"
+                                style="animation: drawCheck 0.3s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;" />
+                        </svg>
                     </div>
-
-                    <div class="camera-instructions">
-                        <p>Position your face within the oval</p>
-                    </div>
+                    <div class="employee-name" id="user-name">Welcome Back!</div>
+                    <div class="checkin-time" id="checkin-time"></div>
                 </div>
-
-                <div class="camera-controls">
-                    <button type="button" class="btn-capture" id="captureBtn">
-                        <span class="capture-icon"></span>
-                        Check In
-                    </button>
-                </div>
-            </div>
-
-            <div id="loadingSection" class="loading-section hidden">
-                <div class="spinner"></div>
-                <p>Recognizing your face...</p>
-            </div>
-
-            <div id="successSection" class="success-section hidden">
-                <div class="success-icon">✓</div>
-                <h2 id="successName">Welcome!</h2>
-                <p id="successMessage" class="success-message">Attendance marked successfully.</p>
-                <div class="attendance-details">
-                    <div class="detail-item">
-                        <span class="detail-label">Time:</span>
-                        <span class="detail-value" id="checkInTime">--:--</span>
-                    </div>
-                    <div class="detail-item" id="workHoursContainer" style="display: none;">
-                        <span class="detail-label">Hours Worked:</span>
-                        <span class="detail-value" id="workHours">-- hrs</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Confidence:</span>
-                        <span class="detail-value" id="confidence">--%</span>
-                    </div>
-                </div>
-                <button type="button" class="btn-primary" onclick="location.reload()">
-                    Done
-                </button>
-            </div>
-
-            <div id="errorSection" class="error-section hidden">
-                <div class="error-icon">✕</div>
-                <h2>Recognition Failed</h2>
-                <p id="errorMessage">Face not recognized.</p>
-                <button type="button" class="btn-primary" id="retryBtn">
-                    Try Again
-                </button>
-                <a href="register.html" class="link-secondary">Not registered? Register here</a>
             </div>
         </div>
+
+        <!-- ERROR OVERLAY -->
+        <div id="overlay-error" class="fullscreen-overlay hidden">
+            <div class="icon-circle error">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </div>
+            <h2>Not Recognized</h2>
+            <p id="error-msg" style="margin-bottom: 28px;">Please make sure your face is visible.</p>
+            <button class="btn btn-secondary" onclick="resetApp()">
+                Try Again
+            </button>
+        </div>
+
+        <!-- Edge Glow (for error state) -->
+        <div id="edge-glow" class="hidden"></div>
     </div>
 
     <script src="camera.js"></script>
     <script>
-        // Configuration
-        const API_URL = 'https://michele-intrinsic-desolatingly.ngrok-free.dev'; // Local network IP - access from mobile on same WiFi
+        // CONFIG
+        const API_URL = 'https://nonrectangularly-bulbless-malcolm.ngrok-free.dev';
 
-        let videoStream = null;
+        let stream = null;
 
-        // Start camera on page load
+        // DOM Elements
+        const views = {
+            loading: document.getElementById('overlay-loading'),
+            success: document.getElementById('overlay-success'),
+            error: document.getElementById('overlay-error')
+        };
+
+        // --- CLOCK ---
+        function updateClock() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('en-US', {
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+            });
+            const date = now.toLocaleDateString('en-US', {
+                weekday: 'short', month: 'short', day: 'numeric'
+            });
+            document.getElementById('header-clock').textContent = time;
+            document.getElementById('header-date').textContent = date;
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // --- INIT ---
         document.addEventListener('DOMContentLoaded', async () => {
             await startCamera();
-        });
 
-        // Start camera
-        async function startCamera() {
+            // Check API health
             try {
-                videoStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user', width: 1280, height: 720 }
+                await fetch(`${API_URL}/`, {
+                    headers: {
+                        'ngrok-skip-browser-warning': 'true'
+                    }
                 });
-                document.getElementById('video').srcObject = videoStream;
-            } catch (error) {
-                console.error('Camera access denied:', error);
-                showError('Camera access denied. Please allow camera access and try again.');
+            } catch (e) {
+                const dot = document.getElementById('status-dot');
+                dot.style.backgroundColor = 'var(--error)';
+                dot.className = 'status-dot error-state';
+                document.getElementById('status-text').textContent = 'Offline';
             }
-        }
-
-        // Stop camera
-        function stopCamera() {
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
-                videoStream = null;
-            }
-        }
-
-        // Capture and check in
-        document.getElementById('captureBtn').addEventListener('click', async () => {
-            const video = document.getElementById('video');
-            const canvas = document.getElementById('canvas');
-            const context = canvas.getContext('2d');
-
-            // Set canvas size to video size
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-
-            // Draw video frame to canvas
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            // Convert to base64
-            const imageData = canvas.toDataURL('image/jpeg', 0.8);
-
-            // Stop camera
-            stopCamera();
-
-            // Show loading
-            showSection('loadingSection');
-
-            // Submit attendance
-            await submitAttendance(imageData);
         });
 
-        // Submit attendance
-        async function submitAttendance(faceImage) {
+        // --- CAMERA ---
+        async function startCamera() {
+            // 1. SSL/Secure Context Check
+            if (!window.isSecureContext) {
+                showError("⚠️ HTTPS Required! Please use the 'https://' ngrok URL.");
+                return;
+            }
+
             try {
-                const payload = {
-                    face_image: faceImage
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error("Camera API not supported");
+                }
+
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'user',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+
+                const videoEl = document.getElementById('video');
+                videoEl.srcObject = stream;
+
+                // Ensure video plays
+                videoEl.onloadedmetadata = () => {
+                    videoEl.play().catch(e => console.error("Play error:", e));
                 };
 
-                const response = await fetch(`${API_URL}/attendance/check-in`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
+            } catch (e) {
+                console.error("Camera Error:", e);
+                let msg = "Camera access denied.";
+                if (e.name === 'NotAllowedError') msg = "Permission denied. Allow camera access.";
+                else if (e.name === 'NotFoundError') msg = "No camera found.";
+                else if (e.name === 'NotReadableError') msg = "Camera in use by another app.";
+                else if (e.name === 'SecurityError') msg = "Insecure context. Use HTTPS.";
 
-                const result = await response.json();
+                showError(`${msg} (${e.name})`);
+            }
+        }
 
-                if (response.ok && result.recognized) {
-                    const now = new Date();
-                    const timeString = now.toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
+        // --- AUTO-SCAN & VOICE ---
+        let isScanning = false;
+        let lastSpeakTime = 0;
+
+        async function startAutoScan() {
+            if (isScanning) return;
+            isScanning = true;
+
+            // Update status
+            updateStatus('scanning', 'Scanning');
+
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            while (isScanning) {
+                // Wait if video not ready
+                if (video.paused || video.ended || video.readyState < 2) {
+                    await new Promise(r => setTimeout(r, 500));
+                    continue;
+                }
+
+                // Update to "Face Detected" when scanning
+                updateStatus('detected', 'Face Detected');
+
+                // Capture
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0);
+                const imageBase64 = canvas.toDataURL('image/jpeg', 0.6);
+
+                // Update to "Verifying"
+                updateStatus('verifying', 'Verifying');
+
+                try {
+                    const res = await fetch(`${API_URL}/attendance/check-in`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'ngrok-skip-browser-warning': 'true'
+                        },
+                        body: JSON.stringify({ face_image: imageBase64 })
                     });
 
-                    showSuccess(
-                        result.employee_name,
-                        result.message,
-                        timeString,
-                        result.confidence_score
-                    );
-                } else {
-                    showError(result.message || result.detail || 'Face not recognized');
+                    const data = await res.json();
+
+                    if (res.ok && data.recognized) {
+                        isScanning = false;
+                        showSuccess(data);
+                        speakWelcome("Thank you");
+
+                        // Auto-reset after 3.5 seconds
+                        setTimeout(() => {
+                            if (!isScanning) resetApp();
+                        }, 3500);
+
+                        break;
+                    } else {
+                        // Back to scanning
+                        updateStatus('scanning', 'Scanning');
+                    }
+                } catch (e) {
+                    updateStatus('scanning', 'Scanning');
                 }
-            } catch (error) {
-                console.error('Attendance error:', error);
-                showError('Network error. Please check your connection and try again.');
+
+                // Wait before next scan
+                await new Promise(r => setTimeout(r, 1000));
             }
         }
 
-        // Retry
-        document.getElementById('retryBtn').addEventListener('click', async () => {
-            showSection('cameraSection');
-            await startCamera();
-        });
+        function updateStatus(state, text) {
+            const dot = document.getElementById('status-dot');
+            const textEl = document.getElementById('status-text');
+            const viewport = document.getElementById('scanner-viewport');
+            const faceGuide = document.getElementById('face-guide');
 
-        // Show section
-        function showSection(sectionId) {
-            const sections = ['cameraSection', 'loadingSection', 'successSection', 'errorSection'];
-            sections.forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-            });
-            document.getElementById(sectionId).classList.remove('hidden');
-        }
+            dot.className = `status-dot ${state}`;
+            textEl.textContent = text;
 
-        // Show success
-        function showSuccess(name, message, time, confidence, workHours = null) {
-            // Extract just the name from the message if it contains "Welcome" or "Thank you"
-            const displayName = name;
-
-            // Set the title based on message type
-            if (message.includes('Welcome')) {
-                document.getElementById('successName').textContent = `Welcome, ${displayName}!`;
-                document.getElementById('workHoursContainer').style.display = 'none';
-            } else if (message.includes('Thank you')) {
-                document.getElementById('successName').textContent = `Thank you, ${displayName}!`;
-                // Extract hours from message if present
-                const hoursMatch = message.match(/(\d+\.\d+) hours/);
-                if (hoursMatch) {
-                    document.getElementById('workHours').textContent = `${hoursMatch[1]} hrs`;
-                    document.getElementById('workHoursContainer').style.display = 'flex';
-                }
+            // Update scanning ring & viewport states
+            if (state === 'detected' || state === 'verifying') {
+                viewport?.classList.add('detected');
+                faceGuide?.classList.add('detected');
             } else {
-                document.getElementById('successName').textContent = displayName;
-                document.getElementById('workHoursContainer').style.display = 'none';
+                viewport?.classList.remove('detected');
+                faceGuide?.classList.remove('detected');
             }
-
-            document.getElementById('successMessage').textContent = message;
-            document.getElementById('checkInTime').textContent = time;
-            document.getElementById('confidence').textContent = `${(confidence * 100).toFixed(1)}%`;
-            showSection('successSection');
         }
 
-        // Show error
-        function showError(message) {
-            document.getElementById('errorMessage').textContent = message;
-            showSection('errorSection');
+        function speakWelcome(text) {
+            const now = Date.now();
+            if (now - lastSpeakTime < 5000) return;
+            lastSpeakTime = now;
+
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                const voices = window.speechSynthesis.getVoices();
+                const voice = voices.find(v => v.name.includes('Female') || v.name.includes('Google US English'));
+                if (voice) utterance.voice = voice;
+                utterance.pitch = 1.1;
+                utterance.rate = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
         }
+
+        // Hook into existing startCamera
+        const originalStartCamera = startCamera;
+        startCamera = async function () {
+            await originalStartCamera();
+            startAutoScan();
+        };
+
+        // --- UI UPDATES ---
+        function showSuccess(data) {
+            document.getElementById('user-name').textContent = `Hi, ${data.employee_name}!`;
+            document.getElementById('checkin-time').textContent =
+                new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+            // Green flash
+            const flash = document.getElementById('success-flash');
+            flash.className = 'success-flash';
+            setTimeout(() => { flash.className = 'hidden'; }, 600);
+
+            // Show slide-up overlay
+            views.success.classList.remove('hidden');
+            updateStatus('granted', 'Access Granted');
+        }
+
+        function showError(msg) {
+            // Only show major errors, not recognition fail in auto-mode
+            if (isScanning) return;
+
+            document.getElementById('error-msg').textContent = msg;
+            views.error.classList.remove('hidden');
+
+            // Edge glow
+            const glow = document.getElementById('edge-glow');
+            glow.className = 'edge-glow-error';
+            setTimeout(() => { glow.className = 'hidden'; }, 1500);
+
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        }
+
+        window.resetApp = () => {
+            views.success.classList.add('hidden');
+            views.error.classList.add('hidden');
+            views.loading.classList.add('hidden');
+
+            // Restart scanning
+            if (!isScanning) {
+                updateStatus('scanning', 'Scanning');
+                startAutoScan();
+            }
+        };
     </script>
 </body>
 

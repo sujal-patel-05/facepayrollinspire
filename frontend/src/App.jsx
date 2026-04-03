@@ -1,70 +1,72 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import { useState, useEffect } from 'react';
-import Login from './components/Login';
-import Dashboard from './components/Dashboard';
-import AdminDashboard from './components/AdminDashboard';
-import EmployeeManagement from './components/EmployeeManagement';
-import AttendanceMonitor from './components/AttendanceMonitor';
-import PayrollManagement from './components/PayrollManagement';
-import Analytics from './components/Analytics';
-import EmployeeDashboard from './components/EmployeeDashboard';
+import Layout from './components/layout/Layout';
+import Dashboard from './pages/Dashboard';
+import Employees from './pages/Employees';
+import Attendance from './pages/Attendance';
+import Departments from './pages/Departments';
+import Payroll from './pages/Payroll';
+import Analytics from './pages/Analytics';
+import './styles/global.css';
 
 function App() {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        setIsAuthenticated(!!token);
-        setIsLoading(false);
-    }, []);
-
-    if (isLoading) {
-        return (
-            <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100vh'
-            }}>
-                <div className="spinner"></div>
-            </div>
-        );
-    }
-
     return (
-        <>
-            <BrowserRouter>
-                <Routes>
-                    <Route
-                        path="/login"
-                        element={
-                            isAuthenticated ?
-                                <Navigate to="/dashboard" /> :
-                                <Login setIsAuthenticated={setIsAuthenticated} />
-                        }
-                    />
-                    <Route
-                        path="/dashboard/*"
-                        element={
-                            isAuthenticated ?
-                                <Dashboard setIsAuthenticated={setIsAuthenticated} /> :
-                                <Navigate to="/login" />
-                        }
-                    >
-                        <Route index element={<AdminDashboard />} />
-                        <Route path="employees" element={<EmployeeManagement />} />
-                        <Route path="attendance" element={<AttendanceMonitor />} />
-                        <Route path="payroll" element={<PayrollManagement />} />
-                        <Route path="analytics" element={<Analytics />} />
-                        <Route path="employee/:id" element={<EmployeeDashboard />} />
-                    </Route>
-                    <Route path="/" element={<Navigate to="/dashboard" />} />
-                </Routes>
-            </BrowserRouter>
-            <Toaster position="top-right" />
-        </>
+        <BrowserRouter>
+            <Routes>
+                {/* Redirect root to dashboard */}
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+
+                {/* All pages directly accessible without login */}
+                <Route
+                    path="/dashboard"
+                    element={
+                        <Layout>
+                            <Dashboard />
+                        </Layout>
+                    }
+                />
+                <Route
+                    path="/employees"
+                    element={
+                        <Layout>
+                            <Employees />
+                        </Layout>
+                    }
+                />
+                <Route
+                    path="/attendance"
+                    element={
+                        <Layout>
+                            <Attendance />
+                        </Layout>
+                    }
+                />
+                <Route
+                    path="/departments"
+                    element={
+                        <Layout>
+                            <Departments />
+                        </Layout>
+                    }
+                />
+                <Route
+                    path="/payroll"
+                    element={
+                        <Layout>
+                            <Payroll />
+                        </Layout>
+                    }
+                />
+                <Route
+                    path="/analytics"
+                    element={
+                        <Layout>
+                            <Analytics />
+                        </Layout>
+                    }
+                />
+            </Routes>
+        </BrowserRouter>
     );
 }
 
